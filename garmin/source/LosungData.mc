@@ -16,8 +16,8 @@ module LosungData {
         }
         try {
             var raw = WatchUi.loadResource(resId) as String;
-            var sep = raw.find("|");
-            if (sep == null) {
+            var sep = indexOfPipe(raw);
+            if (sep < 0) {
                 return null;
             }
             return [
@@ -28,5 +28,17 @@ module LosungData {
             System.println("Resource load failed: " + ex.getErrorMessage());
             return null;
         }
+    }
+
+    // String.find isn't part of the documented Lang.String API, so do the
+    // scan manually to avoid depending on undocumented behaviour.
+    function indexOfPipe(s as String) as Number {
+        var len = s.length();
+        for (var i = 0; i < len; i += 1) {
+            if (s.substring(i, i + 1).equals("|")) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

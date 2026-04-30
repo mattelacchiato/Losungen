@@ -106,6 +106,18 @@ jobs:
             echo "RELEASE_NAME=${{ github.ref_name }} (build #${{ github.run_number }})"
           } >> "$GITHUB_ENV"
 
+      - name: Stamp build version
+        run: |
+          cat > garmin/source/BuildInfo.mc <<EOF
+          import Toybox.Lang;
+
+          // Generated at build time by CI. Do not edit manually.
+          module BuildInfo {
+              const VERSION = "${APP_VERSION}";
+          }
+          EOF
+          cat garmin/source/BuildInfo.mc
+
       - name: Compile fr955 .prg
         run: |
           set -e

@@ -60,6 +60,9 @@ class LosungView extends WatchUi.View {
         var headerH = dc.getFontHeight(headerFont);
         var refH = dc.getFontHeight(refFont);
         var bodyLineH = dc.getFontHeight(bodyFont);
+        var footerFont = Graphics.FONT_XTINY;
+        var footerH = dc.getFontHeight(footerFont);
+        var footerY = height - footerH - 2;
 
         // Header (date)
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
@@ -73,7 +76,7 @@ class LosungView extends WatchUi.View {
         // Body
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         var bodyTop = refY + refH + 6;
-        var bodyAreaH = height - bodyTop - 4;
+        var bodyAreaH = footerY - bodyTop - 2;
         var bodyMargin = 8;
         var bodyW = width - 2 * bodyMargin;
 
@@ -102,6 +105,16 @@ class LosungView extends WatchUi.View {
         if (lines.size() > maxVisible) {
             drawScrollIndicator(dc, width, bodyTop, bodyAreaH, _scroll, maxScroll);
         }
+
+        // Footer with build version (always visible, doesn't scroll)
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(
+            width / 2,
+            footerY,
+            footerFont,
+            BuildInfo.VERSION,
+            Graphics.TEXT_JUSTIFY_CENTER
+        );
     }
 
     private function drawScrollIndicator(
