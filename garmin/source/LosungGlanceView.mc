@@ -14,7 +14,7 @@ class LosungGlanceView extends WatchUi.GlanceView {
         GlanceView.initialize();
         _loaded = false;
         _line1 = "Lade...";
-        _line2 = "build " + BuildInfo.VERSION;
+        _line2 = "b" + BuildInfo.VERSION;
     }
 
     function onShow() as Void {
@@ -24,28 +24,35 @@ class LosungGlanceView extends WatchUi.GlanceView {
     function onUpdate(dc as Dc) as Void {
         ensureLoaded();
 
-        dc.setColor(Graphics.COLOR_TRANSPARENT, Graphics.COLOR_BLACK);
-        dc.clear();
+        var width = dc.getWidth();
+        var height = dc.getHeight();
 
-        var titleFont = Graphics.FONT_GLANCE;
-        var bodyFont = Graphics.FONT_GLANCE;
+        // Sentinel: a thin red border. If you can see this on the watch,
+        // onUpdate is being invoked and the system is showing my custom
+        // glance. If you can't, the system is ignoring my GlanceView.
+        dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+        dc.drawRectangle(0, 0, width, height);
+
+        var x = 16;
+        var font = Graphics.FONT_TINY;
+        var lineH = dc.getFontHeight(font);
+
+        var blockH = 2 * lineH;
+        var topY = (height - blockH) / 2;
+        if (topY < 0) { topY = 0; }
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, 0, titleFont, _line1, Graphics.TEXT_JUSTIFY_LEFT);
-
-        var titleHeight = dc.getFontHeight(titleFont);
+        dc.drawText(
+            x, topY, font, _line1,
+            Graphics.TEXT_JUSTIFY_LEFT
+        );
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
-            0,
-            titleHeight + 2,
-            bodyFont,
-            _line2,
+            x, topY + lineH, font, _line2,
             Graphics.TEXT_JUSTIFY_LEFT
         );
     }
 
-    // Idempotent — runs once, leaves diagnostic strings on any failure
-    // so the glance never goes silently blank.
     private function ensureLoaded() as Void {
         if (_loaded) {
             return;
@@ -55,7 +62,7 @@ class LosungGlanceView extends WatchUi.GlanceView {
             var entry = LosungData.entryForToday();
             if (entry == null) {
                 _line1 = "Losung";
-                _line2 = "Keine Daten (b" + BuildInfo.VERSION + ")";
+                _line2 = "Keine Daten b" + BuildInfo.VERSION;
                 return;
             }
             _line1 = entry[0];
@@ -63,7 +70,7 @@ class LosungGlanceView extends WatchUi.GlanceView {
         } catch (ex) {
             _line1 = "Glance-Fehler";
             var msg = ex.getErrorMessage();
-            _line2 = (msg == null ? "?" : msg) + " | b" + BuildInfo.VERSION;
+            _line2 = (msg == null ? "?" : msg);
             System.println("Glance error: " + msg);
         }
     }
