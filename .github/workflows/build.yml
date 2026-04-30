@@ -81,14 +81,14 @@ jobs:
             rm developer_key.pem
           fi
 
-      - name: Verify JSON resource is in sync with XML source
+      - name: Verify generated resources are in sync with XML source
         run: |
           set -e
           unzip -o Losung_2026_XML.zip -d xml_extracted
           python3 tools/convert.py
-          if ! git diff --quiet -- garmin/resources/jsonData/losungen.json; then
-            echo "::error::garmin/resources/jsonData/losungen.json is out of sync with Losung_2026_XML.zip."
-            git --no-pager diff --stat -- garmin/resources/jsonData/losungen.json
+          if ! git diff --quiet -- garmin/resources/strings/days.xml garmin/source/LosungIndex.mc; then
+            echo "::error::Generated resources are out of sync with Losung_2026_XML.zip — re-run tools/convert.py and commit."
+            git --no-pager diff --stat -- garmin/resources/strings/days.xml garmin/source/LosungIndex.mc
             exit 1
           fi
 

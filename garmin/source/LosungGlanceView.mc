@@ -15,13 +15,13 @@ class LosungGlanceView extends WatchUi.GlanceView {
     }
 
     function onShow() as Void {
-        var entry = LosungData.entryFor(LosungData.todayKey());
+        var entry = LosungData.entryForToday();
         if (entry == null) {
             _reference = WatchUi.loadResource(Rez.Strings.NoDataTitle) as String;
             _preview = WatchUi.loadResource(Rez.Strings.NoDataBody) as String;
         } else {
-            _reference = entry.get("r") as String;
-            _preview = entry.get("t") as String;
+            _reference = entry[0];
+            _preview = entry[1];
         }
     }
 

@@ -3,41 +3,30 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Time;
 import Toybox.Time.Gregorian;
+import Toybox.WatchUi;
 
 module LosungData {
 
-    function todayKey() as String {
+    // [reference, text]; null if today is outside the bundled year.
+    function entryForToday() as Array<String> or Null {
         var now = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
-        return formatKey(now.year, now.month, now.day);
-    }
-
-    function formatKey(year as Number, month as Number, day as Number) as String {
-        var m = month < 10 ? "0" + month : "" + month;
-        var d = day < 10 ? "0" + day : "" + day;
-        return year + m + d;
-    }
-
-    function load() as Dictionary or Null {
-        try {
-            var raw = Application.loadResource(Rez.JsonData.LosungenData);
-            if (raw instanceof Lang.Dictionary) {
-                return raw;
-            }
-        } catch (ex) {
-            System.println("Resource load failed: " + ex.getErrorMessage());
-        }
-        return null;
-    }
-
-    function entryFor(key as String) as Dictionary or Null {
-        var data = load();
-        if (data == null) {
+        var resId = LosungIndex.resForDay(now.month, now.day);
+        if (resId == null) {
             return null;
         }
-        var entry = data.get(key);
-        if (entry instanceof Lang.Dictionary) {
-            return entry;
+        try {
+            var raw = WatchUi.loadResource(resId) as String;
+            var sep = raw.find("|");
+            if (sep == null) {
+                return null;
+            }
+            return [
+                raw.substring(0, sep),
+                raw.substring(sep + 1, raw.length())
+            ] as Array<String>;
+        } catch (ex) {
+            System.println("Resource load failed: " + ex.getErrorMessage());
+            return null;
         }
-        return null;
     }
 }
