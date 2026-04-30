@@ -45,22 +45,22 @@ Auf der Uhr installieren: `losung-nt.prg` per USB nach
 
 GitHub Actions baut automatisch eine `.prg` mit Buildnummer im Namen
 (`losung-nt-build-<run_number>.prg`) — siehe
-`.github/workflows/build.yml`.
+`.github/workflows/build.yml`. Die SDK-Version (`9.1.0`) ist im
+Workflow gepinnt; das fr955-Device-Pack liegt in
+`garmin/vendor/devices/fr955/` mit drin und wird im CI nach
+`~/.Garmin/ConnectIQ/Devices/fr955` installiert. Beim Aktualisieren
+SDK und Device-Pack zusammen bumpen.
 
-Einmalige Einrichtung:
+Optional: **Secret** `CIQ_DEVELOPER_KEY` setzen — Developer-Key
+(DER-PKCS8) Base64-kodiert (`base64 -w0 developer_key.der`). Ohne
+Secret baut der Workflow mit einem Wegwerf-Key und warnt.
 
-1. **Repo-Variable** `CIQ_SDK_URL` setzen (Settings → Secrets and
-   variables → Actions → Variables): aktuelle Linux-SDK-URL von
-   <https://developer.garmin.com/connect-iq/sdk/>.
-2. **Secret** `MONKEY_DEVELOPER_KEY_BASE64` setzen — Developer-Key
-   (`developer_key` als DER-PKCS8) Base64-kodiert (`base64 -w0`).
-   Ohne Secret baut der Workflow mit einem Wegwerf-Key und warnt.
+Releases:
 
-Bei jedem Push auf `main` und bei jedem `v*`-Tag erzeugt der Workflow
-ein GitHub-Release mit der `.prg` als Asset:
-
-- `main` → Pre-Release `build-<n>`
+- Push auf den Default-Branch → "Latest"-Release
+  (`<branch>-build-<n>`) mit der `.prg` als Asset
 - Tag `vX.Y.Z` → reguläres Release
+- Push auf andere Branches → Pre-Release
 
-Bei anderen Branches/PRs landet die `.prg` als Build-Artifact am
-Action-Run.
+In allen Fällen liegt die `.prg` zusätzlich als Workflow-Artifact am
+Run-Eintrag.

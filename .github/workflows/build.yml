@@ -15,100 +15,153 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Aktuelle Linux-SDK-URL bei Garmin nachschlagen und als Repo-Variable
-      # CIQ_SDK_URL setzen (Settings → Variables → Actions). Pattern:
-      # https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-lin-<version>-<date>-<hash>.zip
-      SDK_URL: ${{ vars.CIQ_SDK_URL }}
-      SDK_DIR: ${{ github.workspace }}/.ciq-sdk
-      DEV_KEY: ${{ github.workspace }}/.developer_key
+      # Pinned together with garmin/vendor/devices/fr955.
+      CIQ_SDK_VERSION: "9.1.0"
+      CIQ_SDK_FILE: "connectiq-sdk-lin-9.1.0-2026-03-09-6a872a80b.zip"
+      CIQ_SDK_BASE: "https://developer.garmin.com/downloads/connect-iq/sdks"
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Validate SDK URL is configured
-        run: |
-          if [ -z "$SDK_URL" ]; then
-            echo "::error::Repository variable CIQ_SDK_URL not set."
-            echo "Find the current Linux SDK URL at https://developer.garmin.com/connect-iq/sdk/ and add it as a repository variable named CIQ_SDK_URL."
-            exit 1
-          fi
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Cache Connect IQ SDK
-        id: sdk-cache
+      - name: Cache SDK
+        id: cache-sdk
         uses: actions/cache@v4
         with:
-          path: ${{ env.SDK_DIR }}
-          key: ciq-sdk-${{ hashFiles('.github/workflows/build.yml') }}-${{ env.SDK_URL }}
+          path: ~/ciq-sdk
+          key: ciq-sdk-${{ env.CIQ_SDK_FILE }}
 
       - name: Download Connect IQ SDK
-        if: steps.sdk-cache.outputs.cache-hit != 'true'
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
         run: |
-          set -euo pipefail
-          mkdir -p "$SDK_DIR"
-          curl -fL --retry 4 --retry-delay 5 -o /tmp/ciq-sdk.zip "$SDK_URL"
-          unzip -q /tmp/ciq-sdk.zip -d "$SDK_DIR"
-          chmod +x "$SDK_DIR"/bin/*
+          set -e
+          mkdir -p "$HOME/ciq-sdk"
+          curl -fSL --retry 4 --retry-delay 5 -o /tmp/ciq-sdk.zip \
+            "${CIQ_SDK_BASE}/${CIQ_SDK_FILE}"
+          unzip -q /tmp/ciq-sdk.zip -d "$HOME/ciq-sdk"
+          rm /tmp/ciq-sdk.zip
 
-      - name: Provision developer key
-        env:
-          DEV_KEY_B64: ${{ secrets.MONKEY_DEVELOPER_KEY_BASE64 }}
+      - name: Locate monkeyc
         run: |
-          set -euo pipefail
-          if [ -n "${DEV_KEY_B64:-}" ]; then
-            echo "$DEV_KEY_B64" | base64 -d > "$DEV_KEY"
-            echo "Using developer key from secret."
-          else
-            echo "::warning::Secret MONKEY_DEVELOPER_KEY_BASE64 not set; generating ephemeral key. The resulting .prg will not be reusable across builds."
-            openssl genrsa -out /tmp/dev_key.pem 4096
-            openssl pkcs8 -topk8 -inform PEM -outform DER \
-              -in /tmp/dev_key.pem -out "$DEV_KEY" -nocrypt
+          set -e
+          MONKEYC=$(find "$HOME/ciq-sdk" -type f -name 'monkeyc' | head -1)
+          if [ -z "$MONKEYC" ]; then
+            echo "::error::monkeyc not found in unpacked SDK"
+            exit 1
           fi
-          chmod 600 "$DEV_KEY"
+          chmod +x "$(dirname "$MONKEYC")"/* 2>/dev/null || true
+          echo "$(dirname "$MONKEYC")" >> "$GITHUB_PATH"
 
-      - name: Verify data resource is up to date
+      - name: Install vendored device pack
         run: |
-          set -euo pipefail
+          set -e
+          GARMIN_HOME="$HOME/.Garmin/ConnectIQ"
+          mkdir -p "$GARMIN_HOME/Devices"
+          cp -r garmin/vendor/devices/fr955 "$GARMIN_HOME/Devices/fr955"
+          ls -la "$GARMIN_HOME/Devices/fr955" | head -10
+
+      - name: Provide developer key
+        env:
+          CIQ_DEVELOPER_KEY: ${{ secrets.CIQ_DEVELOPER_KEY }}
+        run: |
+          if [ -n "$CIQ_DEVELOPER_KEY" ]; then
+            printf '%s' "$CIQ_DEVELOPER_KEY" | base64 -d > developer_key.der
+            echo "Using pinned developer key from CIQ_DEVELOPER_KEY secret."
+          else
+            echo "::warning::CIQ_DEVELOPER_KEY secret is not set. Generating a"
+            echo "::warning::throwaway key; the watch will treat each build as"
+            echo "::warning::a different app."
+            openssl genrsa -out developer_key.pem 4096
+            openssl pkcs8 -topk8 -inform PEM -outform DER \
+              -in developer_key.pem -out developer_key.der -nocrypt
+            rm developer_key.pem
+          fi
+
+      - name: Verify JSON resource is in sync with XML source
+        run: |
+          set -e
           unzip -o Losung_2026_XML.zip -d xml_extracted
           python3 tools/convert.py
           if ! git diff --quiet -- garmin/resources/jsonData/losungen.json; then
-            echo "::error::garmin/resources/jsonData/losungen.json is out of sync with the XML source."
+            echo "::error::garmin/resources/jsonData/losungen.json is out of sync with Losung_2026_XML.zip."
             git --no-pager diff --stat -- garmin/resources/jsonData/losungen.json
             exit 1
           fi
 
-      - name: Build PRG
+      - name: Compute build metadata
+        id: meta
         run: |
-          set -euo pipefail
-          export PATH="$SDK_DIR/bin:$PATH"
-          OUT="losung-nt-build-${{ github.run_number }}.prg"
-          monkeyc \
-            -o "$OUT" \
-            -f garmin/monkey.jungle \
-            -y "$DEV_KEY" \
-            -d fr955 \
-            -w \
-            --release
-          ls -la "$OUT"
-          echo "ARTIFACT=$OUT" >> "$GITHUB_ENV"
+          SAFE_BRANCH=$(echo "${{ github.ref_name }}" | tr '/' '-')
+          TIMESTAMP=$(TZ='Europe/Berlin' date '+%y-%m-%d_%H-%M')
+          VERSION="${SAFE_BRANCH}_${{ github.run_number }}_${TIMESTAMP}"
+          PRG_NAME="losung-nt-build-${{ github.run_number }}.prg"
+          {
+            echo "APP_VERSION=${VERSION}"
+            echo "PRG_NAME=${PRG_NAME}"
+            echo "RELEASE_TAG=${SAFE_BRANCH}-build-${{ github.run_number }}"
+            echo "RELEASE_NAME=${{ github.ref_name }} (build #${{ github.run_number }})"
+          } >> "$GITHUB_ENV"
 
-      - name: Upload PRG artifact
+      - name: Compile fr955 .prg
+        run: |
+          set -e
+          mkdir -p bin
+          monkeyc \
+            -o "bin/${PRG_NAME}" \
+            -f garmin/monkey.jungle \
+            -y developer_key.der \
+            -d fr955 \
+            -w
+          ls -lh "bin/${PRG_NAME}"
+
+      - name: Upload .prg artifact
         uses: actions/upload-artifact@v4
         with:
-          name: losung-nt-build-${{ github.run_number }}
-          path: ${{ env.ARTIFACT }}
+          name: ${{ env.PRG_NAME }}
+          path: bin/${{ env.PRG_NAME }}
           if-no-files-found: error
 
-      - name: Publish Release
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+      - name: Publish GitHub release (default branch)
+        if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('build-{0}', github.run_number) }}
-          name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('Build {0}', github.run_number) }}
-          files: ${{ env.ARTIFACT }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          prerelease: false
+          make_latest: 'true'
+          files: bin/${{ env.PRG_NAME }}
+          body: |
+            Automatischer Build vom Branch `${{ github.ref_name }}`.
+
+            - Commit: ${{ github.sha }}
+            - Workflow-Run: ${{ github.run_number }}
+            - Datei: `${{ env.PRG_NAME }}` (Connect IQ Widget für FR955)
+
+      - name: Publish GitHub release (tag)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          prerelease: false
+          files: bin/${{ env.PRG_NAME }}
           generate_release_notes: true
-          prerelease: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Publish GitHub release (feature branch — prerelease)
+        if: github.event_name == 'push' && github.ref_name != github.event.repository.default_branch && !startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          prerelease: true
+          files: bin/${{ env.PRG_NAME }}
+          body: |
+            Automatischer Build vom Branch `${{ github.ref_name }}`.
+
+            - Commit: ${{ github.sha }}
+            - Workflow-Run: ${{ github.run_number }}
+            - Datei: `${{ env.PRG_NAME }}` (Connect IQ Widget für FR955)
