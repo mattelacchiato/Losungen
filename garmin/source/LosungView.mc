@@ -60,9 +60,6 @@ class LosungView extends WatchUi.View {
         var headerH = dc.getFontHeight(headerFont);
         var refH = dc.getFontHeight(refFont);
         var bodyLineH = dc.getFontHeight(bodyFont);
-        var footerFont = Graphics.FONT_XTINY;
-        var footerH = dc.getFontHeight(footerFont);
-        var footerY = height - footerH - 2;
 
         // Header (date)
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
@@ -73,15 +70,18 @@ class LosungView extends WatchUi.View {
         var refY = headerH + 6;
         dc.drawText(width / 2, refY, refFont, _reference, Graphics.TEXT_JUSTIFY_CENTER);
 
-        // Body
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        // Body (scrollable: text + version footer)
         var bodyTop = refY + refH + 6;
-        var bodyAreaH = footerY - bodyTop - 2;
+        var bodyAreaH = height - bodyTop - 4;
         var bodyMargin = 8;
         var bodyW = width - 2 * bodyMargin;
 
         if (_wrappedLines == null || _lastWidth != bodyW) {
             _wrappedLines = wrap(dc, _text, bodyFont, bodyW);
+            // Append build version as part of the scrollable content so
+            // the user can scroll past the verse to see what's installed.
+            _wrappedLines.add("");
+            _wrappedLines.add("Build " + BuildInfo.VERSION);
             _lastWidth = bodyW;
         }
 
@@ -92,11 +92,19 @@ class LosungView extends WatchUi.View {
         if (_scroll > maxScroll) { _scroll = maxScroll; }
 
         for (var i = 0; i < maxVisible && (i + _scroll) < lines.size(); i += 1) {
+            var lineIndex = i + _scroll;
+            var line = lines[lineIndex];
+            // Last line is the build footer — render it dimmer.
+            if (lineIndex == lines.size() - 1) {
+                dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+            } else {
+                dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+            }
             dc.drawText(
                 width / 2,
                 bodyTop + i * bodyLineH,
                 bodyFont,
-                lines[i + _scroll],
+                line,
                 Graphics.TEXT_JUSTIFY_CENTER
             );
         }
@@ -105,16 +113,6 @@ class LosungView extends WatchUi.View {
         if (lines.size() > maxVisible) {
             drawScrollIndicator(dc, width, bodyTop, bodyAreaH, _scroll, maxScroll);
         }
-
-        // Footer with build version (always visible, doesn't scroll)
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(
-            width / 2,
-            footerY,
-            footerFont,
-            BuildInfo.VERSION,
-            Graphics.TEXT_JUSTIFY_CENTER
-        );
     }
 
     private function drawScrollIndicator(

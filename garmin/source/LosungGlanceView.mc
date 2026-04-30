@@ -1,57 +1,70 @@
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.System;
 import Toybox.WatchUi;
 
 (:glance)
 class LosungGlanceView extends WatchUi.GlanceView {
 
-    private var _reference as String;
-    private var _preview as String;
+    private var _loaded as Boolean;
+    private var _line1 as String;
+    private var _line2 as String;
 
     function initialize() {
         GlanceView.initialize();
-        _reference = "";
-        _preview = "";
+        _loaded = false;
+        _line1 = "Lade...";
+        _line2 = "build " + BuildInfo.VERSION;
     }
 
     function onShow() as Void {
-        var entry = LosungData.entryForToday();
-        if (entry == null) {
-            _reference = WatchUi.loadResource(Rez.Strings.NoDataTitle) as String;
-            _preview = WatchUi.loadResource(Rez.Strings.NoDataBody) as String;
-        } else {
-            _reference = entry[0];
-            _preview = entry[1];
-        }
+        ensureLoaded();
     }
 
     function onUpdate(dc as Dc) as Void {
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        ensureLoaded();
+
+        dc.setColor(Graphics.COLOR_TRANSPARENT, Graphics.COLOR_BLACK);
         dc.clear();
 
-        var width = dc.getWidth();
-        var height = dc.getHeight();
         var titleFont = Graphics.FONT_GLANCE;
         var bodyFont = Graphics.FONT_GLANCE;
 
-        var title = (WatchUi.loadResource(Rez.Strings.GlanceTitle) as String) +
-            ": " + _reference;
-        dc.drawText(0, 0, titleFont, title, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(0, 0, titleFont, _line1, Graphics.TEXT_JUSTIFY_LEFT);
 
         var titleHeight = dc.getFontHeight(titleFont);
-        var bodyY = titleHeight + 2;
-        var bodyHeight = height - bodyY;
-        if (bodyHeight < dc.getFontHeight(bodyFont)) {
-            return;
-        }
-
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
             0,
-            bodyY,
+            titleHeight + 2,
             bodyFont,
-            _preview,
+            _line2,
             Graphics.TEXT_JUSTIFY_LEFT
         );
-        // Glance auto-truncates with ellipsis when text exceeds width.
+    }
+
+    // Idempotent — runs once, leaves diagnostic strings on any failure
+    // so the glance never goes silently blank.
+    private function ensureLoaded() as Void {
+        if (_loaded) {
+            return;
+        }
+        _loaded = true;
+        try {
+            var entry = LosungData.entryForToday();
+            if (entry == null) {
+                _line1 = "Losung";
+                _line2 = "Keine Daten (b" + BuildInfo.VERSION + ")";
+                return;
+            }
+            _line1 = entry[0];
+            _line2 = entry[1];
+        } catch (ex) {
+            _line1 = "Glance-Fehler";
+            var msg = ex.getErrorMessage();
+            _line2 = (msg == null ? "?" : msg) + " | b" + BuildInfo.VERSION;
+            System.println("Glance error: " + msg);
+        }
     }
 }
