@@ -26,13 +26,13 @@ class LosungView extends WatchUi.View {
     }
 
     function onShow() as Void {
-        var entry = LosungData.entryFor(LosungData.todayKey());
+        var entry = LosungData.entryForToday();
         if (entry == null) {
             _reference = WatchUi.loadResource(Rez.Strings.NoDataTitle) as String;
             _text = WatchUi.loadResource(Rez.Strings.NoDataBody) as String;
         } else {
-            _reference = entry.get("r") as String;
-            _text = entry.get("t") as String;
+            _reference = entry[0];
+            _text = entry[1];
         }
         _dateLabel = formatToday();
         _scroll = 0;
