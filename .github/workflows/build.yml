@@ -112,6 +112,7 @@ jobs:
           import Toybox.Lang;
 
           // Generated at build time by CI. Do not edit manually.
+          (:glance)
           module BuildInfo {
               const VERSION = "${APP_VERSION}";
           }
