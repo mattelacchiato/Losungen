@@ -5,7 +5,6 @@ import Toybox.Time;
 import Toybox.Time.Gregorian;
 import Toybox.WatchUi;
 
-(:glance)
 module LosungData {
 
     // [reference, text]; null if today is outside the bundled year.
