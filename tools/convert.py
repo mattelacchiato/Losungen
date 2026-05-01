@@ -55,7 +55,12 @@ def write_strings(entries: list[tuple[int, int, str, str]]) -> None:
 
 def write_index(entries: list[tuple[int, int, str, str]]) -> None:
     INDEX_MC.parent.mkdir(parents=True, exist_ok=True)
-    lines = [GENERATED_NOTICE, "import Toybox.Lang;\n", "module LosungIndex {\n"]
+    lines = [
+        GENERATED_NOTICE,
+        "import Toybox.Lang;\n",
+        "(:glance)\n",
+        "module LosungIndex {\n",
+    ]
     lines.append(
         "    function resForDay(month as Number, day as Number) as Lang.ResourceId or Null {\n"
     )
