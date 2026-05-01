@@ -4,9 +4,10 @@
         entry="LosungApp"
         id="a3f1c2d4e5b64f0fa1b2c3d4e5f60718"
         launcherIcon="@Drawables.LauncherIcon"
-        minApiLevel="3.4.0"
+        minApiLevel="4.0.0"
         name="@Strings.AppName"
-        type="widget">
+        type="widget"
+        version="1.0.0">
         <iq:products>
             <iq:product id="fr955"/>
         </iq:products>
@@ -15,5 +16,6 @@
             <iq:language>deu</iq:language>
             <iq:language>eng</iq:language>
         </iq:languages>
+        <iq:barrels/>
     </iq:application>
 </iq:manifest>
