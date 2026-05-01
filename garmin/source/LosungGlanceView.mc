@@ -9,11 +9,6 @@ class LosungGlanceView extends WatchUi.GlanceView {
         GlanceView.initialize();
     }
 
-    private function makeArray() as Array<String> {
-        var a = ["inline a", "inline b"] as Array<String>;
-        return a;
-    }
-
     function onUpdate(dc as Dc) as Void {
         dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_RED);
         dc.clear();
@@ -21,12 +16,13 @@ class LosungGlanceView extends WatchUi.GlanceView {
         var line1 = "?";
         var line2 = "?";
         try {
-            var arr = makeArray();
-            line1 = arr[0];
-            line2 = arr[1];
+            // Today is 2026-05-01 → key 501 → Rez.Strings.D_0501
+            var resId = LosungIndex.resForDay(5, 1);
+            line1 = "idx ok";
+            line2 = "id=" + resId;
         } catch (ex) {
+            line1 = "idx err";
             var msg = ex.getErrorMessage();
-            line1 = "arr err";
             line2 = (msg == null ? "?" : msg);
         }
 
