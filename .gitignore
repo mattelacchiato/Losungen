@@ -1,5 +1,7 @@
 csv_extracted/
 xml_extracted/
 *.prg
+bin/
 .developer_key
+developer_key.der
 .ciq-sdk/
