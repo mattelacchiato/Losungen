@@ -77,8 +77,15 @@ fi
 # --- Deploy via MTP ----------------------------------------------------------
 
 echo ""
-echo "Sending to watch via MTP..."
-"$MTP_UPLOAD_BIN" "$PROJECT_DIR/bin/$PRG_NAME" "/GARMIN/Apps"
+echo "Sending to watch via MTP (retrying until connected)..."
+attempt=0
+until "$MTP_UPLOAD_BIN" "$PROJECT_DIR/bin/$PRG_NAME" "/GARMIN/Apps" 2>/dev/null; do
+    attempt=$((attempt + 1))
+    if [[ $attempt -eq 1 ]]; then
+        echo "  watch not ready – connect via USB and enable MTP..."
+    fi
+    sleep 2
+done
 
 echo ""
 echo "Done! Disconnect the watch to start the app."

@@ -1,9 +1,7 @@
 import Toybox.Lang;
 
-// Default value for local builds. CI overwrites this file with the
-// actual run number + timestamp before invoking monkeyc — see the
-// "Stamp build version" step in .github/workflows/build.yml.
+// Generated at build time. Do not edit manually.
 (:glance)
 module BuildInfo {
-    const VERSION = "local";
+    const VERSION = "local_4d43599_26-05-03_18-33";
 }
