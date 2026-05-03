@@ -48,7 +48,10 @@ def write_strings(entries: list[tuple[int, int, str, str]]) -> None:
     for month, day, ref, text in entries:
         sid = f"D_{month:02d}{day:02d}"
         body = escape(f"{ref}{SEP}{text}")
-        lines.append(f'    <string id="{sid}">{body}</string>')
+        # scope="glance" links the symbol into the glance binary; without it,
+        # any Rez.Strings.D_* reference from glance code silently produces a
+        # blank glance render even with a tiny resource table.
+        lines.append(f'    <string scope="glance" id="{sid}">{body}</string>')
     lines.append("</strings>")
     DAYS_XML.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <strings>
     <string id="AppName">Losung NT</string>
-    <string id="GlanceTitle">Losung</string>
-    <string id="NoDataTitle">Keine Losung</string>
-    <string id="NoDataBody">Für heute liegt kein Eintrag vor.</string>
+    <string scope="glance" id="GlanceTitle">Losung</string>
+    <string scope="glance" id="NoDataTitle">Keine Losung</string>
+    <string scope="glance" id="NoDataBody">Für heute liegt kein Eintrag vor.</string>
 </strings>

@@ -85,9 +85,10 @@ jobs:
         run: |
           set -e
           unzip -o Losung_2026_XML.zip -d xml_extracted
-          # python3 tools/convert.py  # DIAG: skip regen, use committed files
-          if ! git diff --quiet -- garmin/resources/strings/days.xml; then
-            echo "::error::garmin/resources/strings/days.xml is out of sync with XML source."
+          python3 tools/convert.py
+          if ! git diff --quiet -- garmin/resources/strings/days.xml garmin/source/LosungIndex.mc; then
+            echo "::error::Generated resources are out of sync with XML source. Re-run tools/convert.py."
+            git --no-pager diff -- garmin/resources/strings/days.xml garmin/source/LosungIndex.mc | head -40
             exit 1
           fi
 
