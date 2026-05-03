@@ -1,17 +1,14 @@
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Math;
-import Toybox.System;
-import Toybox.Time;
-import Toybox.Time.Gregorian;
 import Toybox.WatchUi;
 
 class LosungView extends WatchUi.View {
 
     private var _reference as String;
     private var _text as String;
-    private var _dateLabel as String;
-    private var _scroll as Number;
+    private var _scrollPx as Number;
+    private var _maxScrollPx as Number;
+    private var _viewportH as Number;
     private var _wrappedLines as Array<String> or Null;
     private var _lastWidth as Number;
 
@@ -19,8 +16,9 @@ class LosungView extends WatchUi.View {
         View.initialize();
         _reference = "";
         _text = "";
-        _dateLabel = "";
-        _scroll = 0;
+        _scrollPx = 0;
+        _maxScrollPx = 0;
+        _viewportH = 0;
         _wrappedLines = null;
         _lastWidth = 0;
     }
@@ -34,17 +32,20 @@ class LosungView extends WatchUi.View {
             _reference = entry[0];
             _text = entry[1];
         }
-        _dateLabel = formatToday();
-        _scroll = 0;
+        _scrollPx = 0;
         _wrappedLines = null;
     }
 
-    function scrollBy(delta as Number) as Void {
-        _scroll += delta;
-        if (_scroll < 0) {
-            _scroll = 0;
-        }
+    function scrollByPx(deltaPx as Number) as Void {
+        _scrollPx += deltaPx;
+        if (_scrollPx < 0) { _scrollPx = 0; }
+        if (_scrollPx > _maxScrollPx) { _scrollPx = _maxScrollPx; }
         WatchUi.requestUpdate();
+    }
+
+    function pageScroll(direction as Number) as Void {
+        var step = _viewportH > 0 ? _viewportH / 2 : 60;
+        scrollByPx(direction * step);
     }
 
     function onUpdate(dc as Dc) as Void {
@@ -53,65 +54,74 @@ class LosungView extends WatchUi.View {
 
         var width = dc.getWidth();
         var height = dc.getHeight();
-        var headerFont = Graphics.FONT_TINY;
         var refFont = Graphics.FONT_SMALL;
         var bodyFont = Graphics.FONT_XTINY;
-
-        var headerH = dc.getFontHeight(headerFont);
         var refH = dc.getFontHeight(refFont);
         var bodyLineH = dc.getFontHeight(bodyFont);
 
-        // Header (date)
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(width / 2, 4, headerFont, _dateLabel, Graphics.TEXT_JUSTIFY_CENTER);
+        // Round-screen viewport: stay clear of the curved top/bottom edges.
+        var topInset = height / 8;
+        var bottomInset = height / 8;
+        var viewportH = height - topInset - bottomInset;
 
-        // Reference
-        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
-        var refY = headerH + 6;
-        dc.drawText(width / 2, refY, refFont, _reference, Graphics.TEXT_JUSTIFY_CENTER);
-
-        // Body (scrollable: text + version footer)
-        var bodyTop = refY + refH + 6;
-        var bodyAreaH = height - bodyTop - 4;
         var bodyMargin = 8;
         var bodyW = width - 2 * bodyMargin;
 
         if (_wrappedLines == null || _lastWidth != bodyW) {
             _wrappedLines = wrap(dc, _text, bodyFont, bodyW);
-            // Append build version as part of the scrollable content so
-            // the user can scroll past the verse to see what's installed.
-            _wrappedLines.add("");
-            _wrappedLines.add("Build " + BuildInfo.VERSION);
             _lastWidth = bodyW;
         }
+        var verseLines = _wrappedLines as Array<String>;
 
-        var lines = _wrappedLines as Array<String>;
-        var maxVisible = (bodyAreaH / bodyLineH).toNumber();
-        var maxScroll = lines.size() - maxVisible;
-        if (maxScroll < 0) { maxScroll = 0; }
-        if (_scroll > maxScroll) { _scroll = maxScroll; }
+        var refGap = 6;
+        var spacerH = bodyLineH;
+        var totalH = refH + refGap
+                   + verseLines.size() * bodyLineH
+                   + spacerH
+                   + bodyLineH;
 
-        for (var i = 0; i < maxVisible && (i + _scroll) < lines.size(); i += 1) {
-            var lineIndex = i + _scroll;
-            var line = lines[lineIndex];
-            // Last line is the build footer — render it dimmer.
-            if (lineIndex == lines.size() - 1) {
-                dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-            } else {
-                dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-            }
-            dc.drawText(
-                width / 2,
-                bodyTop + i * bodyLineH,
-                bodyFont,
-                line,
-                Graphics.TEXT_JUSTIFY_CENTER
-            );
+        // Overscroll past the natural end so the last line can travel up to
+        // ~1/3 from the top of the screen (i.e. last-line top at 2/3 height).
+        var maxScrollPx;
+        if (totalH <= viewportH) {
+            maxScrollPx = 0;
+        } else {
+            maxScrollPx = topInset + totalH - bodyLineH - (height * 2 / 3);
+            if (maxScrollPx < 0) { maxScrollPx = 0; }
         }
 
-        // Scroll indicator
-        if (lines.size() > maxVisible) {
-            drawScrollIndicator(dc, width, bodyTop, bodyAreaH, _scroll, maxScroll);
+        _maxScrollPx = maxScrollPx;
+        _viewportH = viewportH;
+        if (_scrollPx > maxScrollPx) { _scrollPx = maxScrollPx; }
+        if (_scrollPx < 0) { _scrollPx = 0; }
+        var scrollPx = _scrollPx;
+
+        dc.setClip(0, topInset, width, viewportH);
+
+        var y = topInset - scrollPx;
+
+        // Reference
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(width / 2, y, refFont, _reference, Graphics.TEXT_JUSTIFY_CENTER);
+        y += refH + refGap;
+
+        // Verse
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        for (var i = 0; i < verseLines.size(); i += 1) {
+            dc.drawText(width / 2, y, bodyFont, verseLines[i], Graphics.TEXT_JUSTIFY_CENTER);
+            y += bodyLineH;
+        }
+
+        y += spacerH;
+
+        // Build footer
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(width / 2, y, bodyFont, "Build " + BuildInfo.VERSION, Graphics.TEXT_JUSTIFY_CENTER);
+
+        dc.clearClip();
+
+        if (totalH > viewportH) {
+            drawScrollIndicator(dc, width, topInset, viewportH, scrollPx, maxScrollPx);
         }
     }
 
@@ -123,7 +133,7 @@ class LosungView extends WatchUi.View {
         var trackH = areaH;
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
         dc.fillRectangle(trackX, top, 2, trackH);
-        var thumbH = trackH / (maxPos + 2);
+        var thumbH = (trackH * areaH) / (areaH + maxPos);
         if (thumbH < 6) { thumbH = 6; }
         var thumbY = top + ((trackH - thumbH) * pos) / (maxPos > 0 ? maxPos : 1);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
@@ -198,12 +208,5 @@ class LosungView extends WatchUi.View {
         if (current.length() > 0) { pieces.add(current); }
         if (pieces.size() == 0) { pieces.add(word); }
         return pieces;
-    }
-
-    private function formatToday() as String {
-        var info = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
-        var day = info.day < 10 ? "0" + info.day : "" + info.day;
-        var month = info.month;
-        return day + ". " + month + " " + info.year;
     }
 }
