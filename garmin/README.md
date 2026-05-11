@@ -41,26 +41,8 @@ monkeydo losung-nt.prg fr955
 Auf der Uhr installieren: `losung-nt.prg` per USB nach
 `GARMIN/APPS/` auf der Forerunner 955 kopieren.
 
-## CI
+## Daten-Aktualisierung
 
-GitHub Actions baut automatisch eine `.prg` mit Buildnummer im Namen
-(`losung-nt-build-<run_number>.prg`) — siehe
-`.github/workflows/build.yml`. Die SDK-Version (`9.1.0`) ist im
-Workflow gepinnt; das fr955-Device-Pack liegt in
-`garmin/vendor/devices/fr955/` mit drin und wird im CI nach
-`~/.Garmin/ConnectIQ/Devices/fr955` installiert. Beim Aktualisieren
-SDK und Device-Pack zusammen bumpen.
-
-Optional: **Secret** `CIQ_DEVELOPER_KEY` setzen — Developer-Key
-(DER-PKCS8) Base64-kodiert (`base64 -w0 developer_key.der`). Ohne
-Secret baut der Workflow mit einem Wegwerf-Key und warnt.
-
-Releases:
-
-- Push auf den Default-Branch → "Latest"-Release
-  (`<branch>-build-<n>`) mit der `.prg` als Asset
-- Tag `vX.Y.Z` → reguläres Release
-- Push auf andere Branches → Pre-Release
-
-In allen Fällen liegt die `.prg` zusätzlich als Workflow-Artifact am
-Run-Eintrag.
+Der Workflow `.github/workflows/update-losungen.yml` lädt am 1.
+Dezember die Losungen-XML für das kommende Jahr von losungen.de und
+committet die regenerierten Ressourcen.

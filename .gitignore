@@ -1,6 +1,7 @@
 csv_extracted/
 xml_extracted/
 *.prg
+*.pem
 bin/
 .developer_key
 developer_key.der
@@ -9,3 +10,4 @@ developer_key.der
 .DS_Store
 icon-variants/
 garmin/source/BuildVersion.mc
+garmin/vendor/
