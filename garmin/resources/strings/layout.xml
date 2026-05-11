@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+    <string scope="glance" id="GlanceTitleGap">4</string>
+    <string scope="glance" id="GlanceMarginX">4</string>
+    <!-- 0=XTINY, 1=TINY, 2=SMALL, 3=MEDIUM, 4=LARGE -->
+    <string scope="glance" id="GlanceTitleFont">2</string>
+</strings>

@@ -1,1 +1,12 @@
 project.manifest = manifest.xml
+
+base.resourcePath = resources
+
+fenix7.resourcePath = $(base.resourcePath);resources-fenix7
+fenix7s.resourcePath = $(base.resourcePath);resources-fenix7
+fenix7x.resourcePath = $(base.resourcePath);resources-fenix7
+fenix7pro.resourcePath = $(base.resourcePath);resources-fenix7
+fenix7spro.resourcePath = $(base.resourcePath);resources-fenix7
+fenix7xpro.resourcePath = $(base.resourcePath);resources-fenix7
+fenix7pronowifi.resourcePath = $(base.resourcePath);resources-fenix7
+fenix7xpronowifi.resourcePath = $(base.resourcePath);resources-fenix7
