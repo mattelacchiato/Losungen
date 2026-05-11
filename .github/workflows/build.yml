@@ -124,16 +124,16 @@ jobs:
 
       - name: Stamp build version
         run: |
-          cat > garmin/source/BuildInfo.mc <<EOF
+          cat > garmin/source/BuildVersion.mc <<EOF
           import Toybox.Lang;
 
           // Generated at build time by CI. Do not edit manually.
           (:glance)
-          module BuildInfo {
+          module BuildVersion {
               const VERSION = "${APP_VERSION}";
           }
           EOF
-          cat garmin/source/BuildInfo.mc
+          cat garmin/source/BuildVersion.mc
 
       - name: Compile fr955 .prg
         run: |

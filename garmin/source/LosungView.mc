@@ -167,7 +167,7 @@ class LosungView extends WatchUi.View {
         y += spacerH;
 
         // Build footer
-        dc.drawText(width / 2, y, bodyFont, "Build " + BuildInfo.VERSION, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(width / 2, y, bodyFont, "Build " + BuildInfo.version(), Graphics.TEXT_JUSTIFY_CENTER);
         y += bodyLineH;
 
         dc.clearClip();

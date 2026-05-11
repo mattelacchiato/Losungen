@@ -1,0 +1,12 @@
+// Fallback for IDE-direct builds. run-sim.sh and CI generate the real
+// BuildVersion.mc at build time. If you compile from the SDK IDE without
+// going through run-sim.sh, copy this file to BuildVersion.mc:
+//
+//   cp garmin/source/BuildVersion.mc.example garmin/source/BuildVersion.mc
+
+import Toybox.Lang;
+
+(:glance)
+module BuildVersion {
+    const VERSION = "dev";
+}

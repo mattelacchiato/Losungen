@@ -32,12 +32,12 @@ TIMESTAMP=$(TZ='Europe/Berlin' date '+%y-%m-%d_%H-%M')
 COMMIT=$(git -C "$PROJECT_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 VERSION="local_${COMMIT}_${TIMESTAMP}"
 
-cat > "$PROJECT_DIR/garmin/source/BuildInfo.mc" <<EOF
+cat > "$PROJECT_DIR/garmin/source/BuildVersion.mc" <<EOF
 import Toybox.Lang;
 
-// Generated at build time. Do not edit manually.
+// Generated at build time by run-sim.sh. Do not edit manually.
 (:glance)
-module BuildInfo {
+module BuildVersion {
     const VERSION = "${VERSION}";
 }
 EOF

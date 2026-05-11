@@ -6,3 +6,5 @@ bin/
 developer_key.der
 .ciq-sdk/
 .claude/settings.local.json
+.DS_Store
+garmin/source/BuildVersion.mc
