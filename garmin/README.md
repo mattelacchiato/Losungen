@@ -40,8 +40,3 @@ monkeydo losung-nt.prg fr955
 
 Auf der Uhr installieren: `losung-nt.prg` per USB nach
 `GARMIN/APPS/` auf der Forerunner 955 kopieren.
-
-## Daten-Aktualisierung
-
-Siehe [Daten aktualisieren](../README.md#daten-aktualisieren) in der
-Root-README.

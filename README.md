@@ -56,20 +56,6 @@ Voraussetzungen:
 
 Details zum Aufbau des Garmin-Teils: [`garmin/README.md`](garmin/README.md).
 
-## Daten aktualisieren
-
-Die Losungen-XML für das jeweils kommende Jahr wird Anfang November auf
-[losungen.de](https://www.losungen.de) veröffentlicht.
-
-```sh
-./tools/update-losungen.sh           # nächstes Kalenderjahr
-./tools/update-losungen.sh 2027      # explizites Jahr
-```
-
-Das Skript zieht die ZIP von losungen.de, entfernt das vorherige
-Jahresarchiv und regeneriert `garmin/resources/strings/days.xml` sowie
-`garmin/source/LosungIndex.mc` via `tools/convert.py`.
-
 ## Lizenz
 
 Der Code dieses Projekts steht unter der MIT-Lizenz — siehe
