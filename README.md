@@ -35,7 +35,7 @@ eingebettet — die Uhr braucht keine Internetverbindung.
 
 | Glance | Losung (AT) | Lehrtext (NT) |
 | --- | --- | --- |
-| ![Glance-Ansicht](docs/Glance.png) | ![Losung – Altes Testament](docs/OverviewAT.png) | ![Lehrtext – Neues Testament](docs/OverviewNT.png) |
+| ![Glance-Ansicht](docs/Glance.png) | ![Losung – Altes Testament](docs/OverviewAT.png?) | ![Lehrtext – Neues Testament](docs/OverviewNT.png) |
 
 ## Unterstützte Geräte
 
