@@ -7,4 +7,5 @@ developer_key.der
 .ciq-sdk/
 .claude/settings.local.json
 .DS_Store
+icon-variants/
 garmin/source/BuildVersion.mc
