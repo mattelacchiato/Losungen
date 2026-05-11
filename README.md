@@ -58,11 +58,20 @@ Details zum Aufbau des Garmin-Teils: [`garmin/README.md`](garmin/README.md).
 
 ## Daten aktualisieren
 
-Der Workflow [`.github/workflows/update-losungen.yml`](.github/workflows/update-losungen.yml)
-zieht jährlich am 1. Dezember die Losungen für das Folgejahr von
-losungen.de, regeneriert die Ressourcen mit `tools/convert.py` und
-committet das Ergebnis auf `main`. Manuell startbar via
-`workflow_dispatch` (optional mit Jahr).
+Die Losungen-XML für das jeweils kommende Jahr wird Anfang November auf
+[losungen.de](https://www.losungen.de) veröffentlicht. Zum Aktualisieren:
+
+```sh
+curl -O https://www.losungen.de/fileadmin/media-losungen/download/Losung_YYYY_XML.zip
+rm Losung_*_XML.zip                  # vorheriges Jahr entfernen
+mv Losung_YYYY_XML.zip ./            # falls nötig
+rm -rf xml_extracted
+unzip -o Losung_YYYY_XML.zip -d xml_extracted
+python3 tools/convert.py
+```
+
+`tools/convert.py` erzeugt `garmin/resources/strings/days.xml` und
+`garmin/source/LosungIndex.mc` neu.
 
 ## Lizenz
 

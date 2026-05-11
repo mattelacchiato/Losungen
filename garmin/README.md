@@ -43,6 +43,5 @@ Auf der Uhr installieren: `losung-nt.prg` per USB nach
 
 ## Daten-Aktualisierung
 
-Der Workflow `.github/workflows/update-losungen.yml` lädt am 1.
-Dezember die Losungen-XML für das kommende Jahr von losungen.de und
-committet die regenerierten Ressourcen.
+Siehe [Daten aktualisieren](../README.md#daten-aktualisieren) in der
+Root-README.
