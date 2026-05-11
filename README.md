@@ -33,9 +33,9 @@ eingebettet — die Uhr braucht keine Internetverbindung.
 
 ## Screenshots
 
-| Glance | Volltext |
-| --- | --- |
-| ![Glance-Ansicht](docs/Glance.png) | ![Volltext-Ansicht](docs/Overview.png) |
+| Glance | Losung (AT) | Lehrtext (NT) |
+| --- | --- | --- |
+| ![Glance-Ansicht](docs/Glance.png) | ![Losung – Altes Testament](docs/OverviewAT.png) | ![Lehrtext – Neues Testament](docs/OverviewNT.png) |
 
 ## Unterstützte Geräte
 

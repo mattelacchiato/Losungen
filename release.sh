@@ -38,12 +38,12 @@ else
     VERSION="release_${COMMIT}_${TIMESTAMP}"
 fi
 
-cat > "$PROJECT_DIR/garmin/source/BuildInfo.mc" <<EOF
+cat > "$PROJECT_DIR/garmin/source/BuildVersion.mc" <<EOF
 import Toybox.Lang;
 
-// Generated at build time. Do not edit manually.
+// Generated at build time by release.sh. Do not edit manually.
 (:glance)
-module BuildInfo {
+module BuildVersion {
     const VERSION = "${VERSION}";
 }
 EOF

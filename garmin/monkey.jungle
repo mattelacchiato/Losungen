@@ -10,3 +10,22 @@ fenix7spro.resourcePath = $(base.resourcePath);resources-fenix7
 fenix7xpro.resourcePath = $(base.resourcePath);resources-fenix7
 fenix7pronowifi.resourcePath = $(base.resourcePath);resources-fenix7
 fenix7xpronowifi.resourcePath = $(base.resourcePath);resources-fenix7
+
+# Launcher icon overrides per device. Default 40x40 in resources/ stays
+# for fr955, fenix7 family, fenix7pro family, fenix8 solar. Other devices
+# get a size-matched icon to avoid SDK upscaling warnings.
+venu441mm.resourcePath = $(base.resourcePath);resources-icon-54
+vivoactive6.resourcePath = $(base.resourcePath);resources-icon-54
+vivoactive5.resourcePath = $(base.resourcePath);resources-icon-56
+fenix843mm.resourcePath = $(base.resourcePath);resources-icon-60
+fenixe.resourcePath = $(base.resourcePath);resources-icon-60
+epix2pro42mm.resourcePath = $(base.resourcePath);resources-icon-60
+epix2pro47mm.resourcePath = $(base.resourcePath);resources-icon-60
+epix2pro51mm.resourcePath = $(base.resourcePath);resources-icon-60
+instinct3amoled45mm.resourcePath = $(base.resourcePath);resources-icon-60
+instinct3amoled50mm.resourcePath = $(base.resourcePath);resources-icon-60
+fenix847mm.resourcePath = $(base.resourcePath);resources-icon-65
+fenix8pro47mm.resourcePath = $(base.resourcePath);resources-icon-65
+venu445mm.resourcePath = $(base.resourcePath);resources-icon-65
+venu3.resourcePath = $(base.resourcePath);resources-icon-70
+venu3s.resourcePath = $(base.resourcePath);resources-icon-70
