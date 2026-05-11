@@ -8,6 +8,7 @@ developer_key.der
 .ciq-sdk/
 .claude/settings.local.json
 .DS_Store
-icon-variants/
+icon-variants/*
+!icon-variants/store_cover.svg
 garmin/source/BuildVersion.mc
 garmin/vendor/
