@@ -31,6 +31,12 @@ eingebettet — die Uhr braucht keine Internetverbindung.
 - **App**: Volltext-Ansicht von Losung und Lehrtext mit Scrollen via
   Hoch/Runter oder Touch.
 
+## Screenshots
+
+| Glance | Volltext |
+| --- | --- |
+| ![Glance-Ansicht](docs/Glance.png) | ![Volltext-Ansicht](docs/Overview.png) |
+
 ## Unterstützte Geräte
 
 Forerunner 955; fēnix 7 / 7S / 7X (inkl. Pro und Pro nowifi); fēnix 8
