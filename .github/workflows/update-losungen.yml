@@ -1,0 +1,99 @@
+name: update-losungen
+
+# Lädt am 1. Dezember jedes Jahres die Losungen-XML für das kommende Jahr
+# von losungen.de, ersetzt die committete Losung_YYYY_XML.zip, regeneriert
+# die Connect-IQ-Ressourcen via tools/convert.py und committet das Ergebnis
+# nach main. Manuell startbar über workflow_dispatch (optional mit Jahr).
+
+on:
+  schedule:
+    # 1. Dezember, 06:00 UTC. Die Daten für das nächste Jahr werden Anfang
+    # November veröffentlicht, am 1.12. sind sie also verlässlich da.
+    - cron: '0 6 1 12 *'
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Jahr (z.B. 2027). Leer = nächstes Kalenderjahr.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine target year
+        id: year
+        run: |
+          set -e
+          INPUT_YEAR="${{ github.event.inputs.year }}"
+          if [ -n "$INPUT_YEAR" ]; then
+            YEAR="$INPUT_YEAR"
+          else
+            # Beim 1.12.-Cron wollen wir die Daten für das kommende Jahr.
+            CUR=$(TZ='Europe/Berlin' date '+%Y')
+            YEAR=$((CUR + 1))
+          fi
+          if ! echo "$YEAR" | grep -Eq '^[0-9]{4}$'; then
+            echo "::error::Ungültiges Jahr: $YEAR"
+            exit 1
+          fi
+          echo "year=$YEAR" >> "$GITHUB_OUTPUT"
+          echo "Target year: $YEAR"
+
+      - name: Download Losungen XML
+        env:
+          YEAR: ${{ steps.year.outputs.year }}
+        run: |
+          set -e
+          URL="https://www.losungen.de/fileadmin/media-losungen/download/Losung_${YEAR}_XML.zip"
+          OUT="Losung_${YEAR}_XML.zip"
+          echo "Fetching $URL"
+          curl -fSL --retry 4 --retry-delay 10 -o "$OUT" "$URL"
+          ls -lh "$OUT"
+          unzip -l "$OUT"
+
+      - name: Replace previous year's zip
+        env:
+          YEAR: ${{ steps.year.outputs.year }}
+        run: |
+          set -e
+          # Falls noch ein Vorjahres-Archiv im Repo liegt, löschen.
+          for f in Losung_*_XML.zip; do
+            if [ "$f" != "Losung_${YEAR}_XML.zip" ]; then
+              echo "Removing $f"
+              rm -- "$f"
+            fi
+          done
+
+      - name: Regenerate Connect IQ resources
+        env:
+          YEAR: ${{ steps.year.outputs.year }}
+        run: |
+          set -e
+          rm -rf xml_extracted
+          unzip -o "Losung_${YEAR}_XML.zip" -d xml_extracted
+          python3 tools/convert.py
+
+      - name: Commit and push if changed
+        env:
+          YEAR: ${{ steps.year.outputs.year }}
+        run: |
+          set -e
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- \
+            'Losung_*_XML.zip' \
+            garmin/resources/strings/days.xml \
+            garmin/source/LosungIndex.mc
+          if git diff --cached --quiet; then
+            echo "Nothing to commit — Losungen for $YEAR already up to date."
+            exit 0
+          fi
+          git commit -m "Update Losungen to ${YEAR}"
+          git push origin HEAD:${{ github.ref_name }}
