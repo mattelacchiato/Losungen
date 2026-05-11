@@ -4,36 +4,52 @@ import Toybox.WatchUi;
 
 class LosungView extends WatchUi.View {
 
-    private var _reference as String;
-    private var _text as String;
+    private var _otRef as String;
+    private var _otText as String;
+    private var _ntRef as String;
+    private var _ntText as String;
     private var _scrollPx as Number;
     private var _maxScrollPx as Number;
     private var _viewportH as Number;
-    private var _wrappedLines as Array<String> or Null;
+    private var _wrappedOt as Array<String> or Null;
+    private var _wrappedNt as Array<String> or Null;
+    private var _wrappedCopyright as Array<String> or Null;
     private var _lastWidth as Number;
+
+    private const COPYRIGHT = "© Evangelische Brüder-Unität – Herrnhuter Brüdergemeine";
 
     function initialize() {
         View.initialize();
-        _reference = "";
-        _text = "";
+        _otRef = "";
+        _otText = "";
+        _ntRef = "";
+        _ntText = "";
         _scrollPx = 0;
         _maxScrollPx = 0;
         _viewportH = 0;
-        _wrappedLines = null;
+        _wrappedOt = null;
+        _wrappedNt = null;
+        _wrappedCopyright = null;
         _lastWidth = 0;
     }
 
     function onShow() as Void {
         var entry = LosungData.entryForToday();
         if (entry == null) {
-            _reference = WatchUi.loadResource(Rez.Strings.NoDataTitle) as String;
-            _text = WatchUi.loadResource(Rez.Strings.NoDataBody) as String;
+            _otRef = WatchUi.loadResource(Rez.Strings.NoDataTitle) as String;
+            _otText = WatchUi.loadResource(Rez.Strings.NoDataBody) as String;
+            _ntRef = "";
+            _ntText = "";
         } else {
-            _reference = entry[0];
-            _text = entry[1];
+            _otRef = entry[0];
+            _otText = entry[1];
+            _ntRef = entry[2];
+            _ntText = entry[3];
         }
         _scrollPx = 0;
-        _wrappedLines = null;
+        _wrappedOt = null;
+        _wrappedNt = null;
+        _wrappedCopyright = null;
     }
 
     function scrollByPx(deltaPx as Number) as Void {
@@ -64,21 +80,33 @@ class LosungView extends WatchUi.View {
         var bottomInset = height / 8;
         var viewportH = height - topInset - bottomInset;
 
-        var bodyMargin = 8;
+        var bodyMargin = 10;
         var bodyW = width - 2 * bodyMargin;
 
-        if (_wrappedLines == null || _lastWidth != bodyW) {
-            _wrappedLines = wrap(dc, _text, bodyFont, bodyW);
+        if (_wrappedOt == null || _lastWidth != bodyW) {
+            _wrappedOt = wrap(dc, _otText, bodyFont, bodyW);
+            _wrappedNt = wrap(dc, _ntText, bodyFont, bodyW);
+            _wrappedCopyright = wrap(dc, COPYRIGHT, bodyFont, bodyW);
             _lastWidth = bodyW;
         }
-        var verseLines = _wrappedLines as Array<String>;
+        var otLines = _wrappedOt as Array<String>;
+        var ntLines = _wrappedNt as Array<String>;
+        var copyrightLines = _wrappedCopyright as Array<String>;
 
         var refGap = 6;
         var spacerH = bodyLineH;
+        var hasNt = _ntRef.length() > 0 || ntLines.size() > 0;
         var totalH = refH + refGap
-                   + verseLines.size() * bodyLineH
-                   + spacerH
-                   + bodyLineH;
+                   + otLines.size() * bodyLineH;
+        if (hasNt) {
+            totalH += spacerH
+                    + refH + refGap
+                    + ntLines.size() * bodyLineH;
+        }
+        totalH += spacerH
+                + bodyLineH
+                + spacerH
+                + copyrightLines.size() * bodyLineH;
 
         // Overscroll past the natural end so the last line can travel up to
         // ~1/3 from the top of the screen (i.e. last-line top at 2/3 height).
@@ -100,23 +128,47 @@ class LosungView extends WatchUi.View {
 
         var y = topInset - scrollPx;
 
-        // Reference
+        // OT reference (Losungsvers)
         dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(width / 2, y, refFont, _reference, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(width / 2, y, refFont, _otRef, Graphics.TEXT_JUSTIFY_CENTER);
         y += refH + refGap;
 
-        // Verse
+        // OT text (Losungstext)
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        for (var i = 0; i < verseLines.size(); i += 1) {
-            dc.drawText(width / 2, y, bodyFont, verseLines[i], Graphics.TEXT_JUSTIFY_CENTER);
+        for (var i = 0; i < otLines.size(); i += 1) {
+            dc.drawText(width / 2, y, bodyFont, otLines[i], Graphics.TEXT_JUSTIFY_CENTER);
             y += bodyLineH;
+        }
+
+        if (hasNt) {
+            y += spacerH;
+
+            // NT reference (Lehrtextvers)
+            dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(width / 2, y, refFont, _ntRef, Graphics.TEXT_JUSTIFY_CENTER);
+            y += refH + refGap;
+
+            // NT text (Lehrtext)
+            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+            for (var i = 0; i < ntLines.size(); i += 1) {
+                dc.drawText(width / 2, y, bodyFont, ntLines[i], Graphics.TEXT_JUSTIFY_CENTER);
+                y += bodyLineH;
+            }
         }
 
         y += spacerH;
 
-        // Build footer
+        // Copyright
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        for (var i = 0; i < copyrightLines.size(); i += 1) {
+            dc.drawText(width / 2, y, bodyFont, copyrightLines[i], Graphics.TEXT_JUSTIFY_CENTER);
+            y += bodyLineH;
+        }
+        y += spacerH;
+
+        // Build footer
         dc.drawText(width / 2, y, bodyFont, "Build " + BuildInfo.VERSION, Graphics.TEXT_JUSTIFY_CENTER);
+        y += bodyLineH;
 
         dc.clearClip();
 

@@ -8,7 +8,8 @@ import Toybox.WatchUi;
 (:glance)
 module LosungData {
 
-    // [reference, text]; null if today is outside the bundled year.
+    // [losungvers, losungtext, lehrtextvers, lehrtext]; null if today is
+    // outside the bundled year.
     function entryForToday() as Array<String> or Null {
         var now = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
         var resId = LosungIndex.resForDay(now.month, now.day);
@@ -17,29 +18,39 @@ module LosungData {
         }
         try {
             var raw = WatchUi.loadResource(resId) as String;
-            var sep = indexOfPipe(raw);
-            if (sep < 0) {
+            var parts = splitPipes(raw, 4);
+            if (parts == null) {
                 return null;
             }
-            return [
-                raw.substring(0, sep),
-                raw.substring(sep + 1, raw.length())
-            ] as Array<String>;
+            return parts;
         } catch (ex) {
             System.println("Resource load failed: " + ex.getErrorMessage());
             return null;
         }
     }
 
-    // String.find isn't part of the documented Lang.String API, so do the
-    // scan manually to avoid depending on undocumented behaviour.
-    function indexOfPipe(s as String) as Number {
+    // Split on '|' into exactly `count` fields. Returns null if the input
+    // does not contain count-1 separators. String.find isn't part of the
+    // documented Lang.String API, so scan manually.
+    function splitPipes(s as String, count as Number) as Array<String> or Null {
+        var parts = new [count] as Array<String>;
+        var start = 0;
+        var found = 0;
         var len = s.length();
         for (var i = 0; i < len; i += 1) {
             if (s.substring(i, i + 1).equals("|")) {
-                return i;
+                if (found >= count - 1) {
+                    return null;
+                }
+                parts[found] = s.substring(start, i);
+                found += 1;
+                start = i + 1;
             }
         }
-        return -1;
+        if (found != count - 1) {
+            return null;
+        }
+        parts[found] = s.substring(start, len);
+        return parts;
     }
 }
