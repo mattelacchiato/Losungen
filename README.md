@@ -32,9 +32,6 @@ Funktionen:
 - Vollbild-Ansicht mit Scrollen durch beide Verse
 - Komplett offline – alle Texte des Jahres sind in der App enthalten
 
-© Evangelische Brüder-Unität – Herrnhuter Brüdergemeine (www.herrnhuter.de)
-Weitere Informationen finden Sie hier: www.losungen.de
-
 ## Screenshots
 
 | Glance | Losung (AT) | Lehrtext (NT) |
