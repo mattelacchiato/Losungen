@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
-"""Convert Losungen XML into per-day Connect IQ resources.
+"""Convert Losungen XML into per-month Connect IQ JSON resources.
 
-Glances on the FR955 only have 64 KB of memory; loading the full year as
-JSON blows that budget. Instead we emit one tiny string resource per day
-and a generated Monkey C lookup that maps month*100+day to the right
-Rez.Strings symbol. The glance loads only today's string (~250 bytes).
+Older Connect IQ devices (CIQ 3.x) cap each module at 254 members. With one
+string resource per day we hit ~370 members in Rez.Strings and the build
+fails for those devices. Per-month JSON resources put 12 entries into
+Rez.JsonData instead — well within the limit — and we still load only one
+month (~7 KB) at a time, so the glance memory budget on the FR955 stays
+intact.
+
+Each month becomes one JSON file (`losungen_YYYY_MM.json`) shaped as
+`{"<day>": [losungvers, losungtext, lehrtextvers, lehrtext], ...}`. The
+generated `LosungIndex.mc` maps year*100+month to the matching
+`Rez.JsonData.L_YYYYMM` symbol.
 
 Use --filter-past to drop entries whose date already lies before today
 (Europe/Berlin). The committed resource file keeps the full year; the
@@ -13,19 +20,20 @@ the user can still see.
 """
 import argparse
 import datetime
+import json
 import re
 import sys
 import xml.etree.ElementTree as ET
 import zoneinfo
 from pathlib import Path
-from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parent.parent
 XML_DIR = ROOT / "xml_extracted"
-DAYS_XML = ROOT / "garmin/resources/strings/days.xml"
+JSON_DIR = ROOT / "garmin/resources/jsondata"
+JSONDATA_XML = JSON_DIR / "jsondata.xml"
 INDEX_MC = ROOT / "garmin/source/LosungIndex.mc"
+LEGACY_DAYS_XML = ROOT / "garmin/resources/strings/days.xml"
 
-SEP = "|"  # verified absent from input
 BERLIN = zoneinfo.ZoneInfo("Europe/Berlin")
 
 
@@ -55,8 +63,6 @@ def parse(xml_path: Path) -> tuple[int, list[tuple[int, int, int, str, str, str,
         ot_text = (item.findtext("Losungstext") or "").strip()
         nt_ref = (item.findtext("Lehrtextvers") or "").strip()
         nt_text = (item.findtext("Lehrtext") or "").strip()
-        for field in (ot_ref, ot_text, nt_ref, nt_text):
-            assert SEP not in field, datum
         out.append((year, month, day, ot_ref, ot_text, nt_ref, nt_text))
     if not out:
         sys.exit(f"No <Losungen> entries parsed from {xml_path.name}")
@@ -69,8 +75,7 @@ def filter_past(
     entries: list[tuple[int, int, int, str, str, str, str]],
 ) -> list[tuple[int, int, int, str, str, str, str]]:
     today = datetime.datetime.now(BERLIN).date()
-    kept = [e for e in entries if datetime.date(e[0], e[1], e[2]) >= today]
-    return kept
+    return [e for e in entries if datetime.date(e[0], e[1], e[2]) >= today]
 
 
 def generated_notice(source_name: str, filtered: bool) -> str:
@@ -82,43 +87,60 @@ def generated_notice(source_name: str, filtered: bool) -> str:
     return head + "\n"
 
 
-def write_strings(
+def write_jsondata(
     entries: list[tuple[int, int, int, str, str, str, str]], notice: str
-) -> None:
-    DAYS_XML.parent.mkdir(parents=True, exist_ok=True)
-    lines = ['<?xml version="1.0" encoding="UTF-8"?>', "<strings>"]
-    lines.append(f"    <!-- {notice.strip().splitlines()[0][3:]} -->")
+) -> list[tuple[int, int]]:
+    """Write one JSON file per (year, month). Returns sorted list of (year, month)."""
+    JSON_DIR.mkdir(parents=True, exist_ok=True)
+    # Wipe previously generated files so removed months don't linger.
+    for old in JSON_DIR.glob("losungen_*.json"):
+        old.unlink()
+
+    by_month: dict[tuple[int, int], dict[str, list[str]]] = {}
     for year, month, day, ot_ref, ot_text, nt_ref, nt_text in entries:
-        sid = f"D_{year:04d}{month:02d}{day:02d}"
-        body = escape(SEP.join([ot_ref, ot_text, nt_ref, nt_text]))
-        # scope="glance" links the symbol into the glance binary; without it,
-        # any Rez.Strings.D_* reference from glance code silently produces a
-        # blank glance render even with a tiny resource table.
-        lines.append(f'    <string scope="glance" id="{sid}">{body}</string>')
-    lines.append("</strings>")
-    DAYS_XML.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        by_month.setdefault((year, month), {})[str(day)] = [ot_ref, ot_text, nt_ref, nt_text]
+
+    months = sorted(by_month.keys())
+    for (year, month), days_map in by_month.items():
+        path = JSON_DIR / f"losungen_{year:04d}_{month:02d}.json"
+        # Sort days numerically within each chunk so re-runs produce stable output.
+        ordered = {k: days_map[k] for k in sorted(days_map.keys(), key=int)}
+        path.write_text(
+            json.dumps(ordered, ensure_ascii=False, separators=(",", ":")) + "\n",
+            encoding="utf-8",
+        )
+
+    # Resource manifest. scope="glance" links these into the glance binary;
+    # without it, glance code referencing Rez.JsonData.* compiles but loads nothing.
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        f"<!-- {notice.strip().splitlines()[0][3:]} -->",
+        "<resources>",
+    ]
+    for year, month in months:
+        sid = f"L_{year:04d}{month:02d}"
+        fname = f"losungen_{year:04d}_{month:02d}.json"
+        lines.append(f'    <jsonData scope="glance" id="{sid}" filename="{fname}"/>')
+    lines.append("</resources>")
+    JSONDATA_XML.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return months
 
 
-def write_index(
-    entries: list[tuple[int, int, int, str, str, str, str]], notice: str
-) -> None:
+def write_index(months: list[tuple[int, int]], notice: str) -> None:
     INDEX_MC.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         notice,
         "import Toybox.Lang;\n",
         "(:glance)\n",
         "module LosungIndex {\n",
+        "    function jsonResForMonth(year as Number, month as Number) as Lang.ResourceId or Null {\n",
+        "        var key = year * 100 + month;\n",
+        "        switch (key) {\n",
     ]
-    lines.append(
-        "    function resForDay(year as Number, month as Number, day as Number) as Lang.ResourceId or Null {\n"
-    )
-    lines.append("        var key = year * 10000 + month * 100 + day;\n")
-    lines.append("        switch (key) {\n")
-    for year, month, day, *_ in entries:
-        key = year * 10000 + month * 100 + day
-        sid = f"D_{year:04d}{month:02d}{day:02d}"
-        lines.append(f"            case {key}: return Rez.Strings.{sid};\n")
-        # `return` makes implicit fallthrough impossible; no break needed.
+    for year, month in months:
+        key = year * 100 + month
+        sid = f"L_{year:04d}{month:02d}"
+        lines.append(f"            case {key}: return Rez.JsonData.{sid};\n")
     lines.append("        }\n        return null;\n    }\n}\n")
     INDEX_MC.write_text("".join(lines), encoding="utf-8")
 
@@ -141,11 +163,16 @@ def main() -> None:
         entries = filter_past(entries)
         print(f"Filtered past days: {before} -> {len(entries)} entries kept.")
 
+    # Drop the legacy per-day strings file if it lingers from an older converter
+    # version. The new build uses jsondata only.
+    if LEGACY_DAYS_XML.exists():
+        LEGACY_DAYS_XML.unlink()
+
     notice = generated_notice(source_name, filtered=args.filter_past)
-    write_strings(entries, notice)
-    write_index(entries, notice)
+    months = write_jsondata(entries, notice)
+    write_index(months, notice)
     print(
-        f"Wrote {len(entries)} day strings -> {DAYS_XML.relative_to(ROOT)}\n"
+        f"Wrote {len(entries)} entries across {len(months)} month(s) -> {JSON_DIR.relative_to(ROOT)}\n"
         f"Wrote lookup -> {INDEX_MC.relative_to(ROOT)}"
     )
 

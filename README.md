@@ -1,5 +1,7 @@
 # Die Losungen
 
+[Im Garmin Connect IQ Store ansehen](https://apps.garmin.com/de-DE/apps/0e0d251e-677f-41f8-b64d-8af9b435d987)
+
 ## Copyright und Nutzungsbedingungen der Losungstexte
 
 Die Losungen der Herrnhuter Brüdergemeine sind urheberrechtlich geschützt.
