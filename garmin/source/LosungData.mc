@@ -12,7 +12,10 @@ module LosungData {
     // outside the bundled year.
     function entryForToday() as Array<String> or Null {
         var now = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
-        var resId = LosungIndex.resForDay(now.month, now.day);
+        // Pass year too: keys are year*10000+month*100+day so a mismatched
+        // year (user running last year's build) falls through to null →
+        // "Keine Losung" instead of silently showing a stale entry.
+        var resId = LosungIndex.resForDay(now.year, now.month, now.day);
         if (resId == null) {
             return null;
         }

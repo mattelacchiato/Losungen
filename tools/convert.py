@@ -88,8 +88,8 @@ def write_strings(
     DAYS_XML.parent.mkdir(parents=True, exist_ok=True)
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', "<strings>"]
     lines.append(f"    <!-- {notice.strip().splitlines()[0][3:]} -->")
-    for _y, month, day, ot_ref, ot_text, nt_ref, nt_text in entries:
-        sid = f"D_{month:02d}{day:02d}"
+    for year, month, day, ot_ref, ot_text, nt_ref, nt_text in entries:
+        sid = f"D_{year:04d}{month:02d}{day:02d}"
         body = escape(SEP.join([ot_ref, ot_text, nt_ref, nt_text]))
         # scope="glance" links the symbol into the glance binary; without it,
         # any Rez.Strings.D_* reference from glance code silently produces a
@@ -110,13 +110,13 @@ def write_index(
         "module LosungIndex {\n",
     ]
     lines.append(
-        "    function resForDay(month as Number, day as Number) as Lang.ResourceId or Null {\n"
+        "    function resForDay(year as Number, month as Number, day as Number) as Lang.ResourceId or Null {\n"
     )
-    lines.append("        var key = month * 100 + day;\n")
+    lines.append("        var key = year * 10000 + month * 100 + day;\n")
     lines.append("        switch (key) {\n")
-    for _y, month, day, *_ in entries:
-        key = month * 100 + day
-        sid = f"D_{month:02d}{day:02d}"
+    for year, month, day, *_ in entries:
+        key = year * 10000 + month * 100 + day
+        sid = f"D_{year:04d}{month:02d}{day:02d}"
         lines.append(f"            case {key}: return Rez.Strings.{sid};\n")
         # `return` makes implicit fallthrough impossible; no break needed.
     lines.append("        }\n        return null;\n    }\n}\n")

@@ -173,19 +173,19 @@ class LosungView extends WatchUi.View {
         dc.clearClip();
 
         if (totalH > viewportH) {
-            drawScrollIndicator(dc, width, topInset, viewportH, scrollPx, maxScrollPx);
+            drawScrollIndicator(dc, width, topInset, viewportH, scrollPx, maxScrollPx, totalH);
         }
     }
 
     private function drawScrollIndicator(
         dc as Dc, width as Number, top as Number, areaH as Number,
-        pos as Number, maxPos as Number
+        pos as Number, maxPos as Number, contentH as Number
     ) as Void {
         var trackX = width - 4;
         var trackH = areaH;
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
         dc.fillRectangle(trackX, top, 2, trackH);
-        var thumbH = (trackH * areaH) / (areaH + maxPos);
+        var thumbH = (trackH * areaH) / contentH;
         if (thumbH < 6) { thumbH = 6; }
         var thumbY = top + ((trackH - thumbH) * pos) / (maxPos > 0 ? maxPos : 1);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);

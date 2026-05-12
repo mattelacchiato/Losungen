@@ -5,8 +5,17 @@ import Toybox.WatchUi;
 (:glance)
 class LosungGlanceView extends WatchUi.GlanceView {
 
+    // Layout values come from string resources (per-device overrides via
+    // resources-fenix7/). Parse once at construction; they never change.
+    private var _titleFont as Graphics.FontType;
+    private var _marginX as Number;
+    private var _titleGap as Number;
+
     function initialize() {
         GlanceView.initialize();
+        _titleFont = resolveFont((WatchUi.loadResource(Rez.Strings.GlanceTitleFont) as String).toNumber());
+        _marginX = (WatchUi.loadResource(Rez.Strings.GlanceMarginX) as String).toNumber();
+        _titleGap = (WatchUi.loadResource(Rez.Strings.GlanceTitleGap) as String).toNumber();
     }
 
     function onUpdate(dc as Dc) as Void {
@@ -25,23 +34,20 @@ class LosungGlanceView extends WatchUi.GlanceView {
             ntRef = entry[2];
         }
 
-        var titleFont = resolveFont((WatchUi.loadResource(Rez.Strings.GlanceTitleFont) as String).toNumber());
         var refFont = Graphics.FONT_XTINY;
-        var marginX = (WatchUi.loadResource(Rez.Strings.GlanceMarginX) as String).toNumber();
-        var titleGap = (WatchUi.loadResource(Rez.Strings.GlanceTitleGap) as String).toNumber();
-        var maxW = dc.getWidth() - marginX;
+        var maxW = dc.getWidth() - _marginX;
 
-        var titleH = dc.getFontHeight(titleFont);
+        var titleH = dc.getFontHeight(_titleFont);
         var refH = dc.getFontHeight(refFont);
-        var totalH = titleH + titleGap + 2 * refH;
+        var totalH = titleH + _titleGap + 2 * refH;
         var y = (dc.getHeight() - totalH) / 2;
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(marginX, y, titleFont, fitWidth(dc, titleFont, title, maxW), Graphics.TEXT_JUSTIFY_LEFT);
-        y += titleH + titleGap;
-        dc.drawText(marginX, y, refFont, fitWidth(dc, refFont, otRef, maxW), Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(_marginX, y, _titleFont, fitWidth(dc, _titleFont, title, maxW), Graphics.TEXT_JUSTIFY_LEFT);
+        y += titleH + _titleGap;
+        dc.drawText(_marginX, y, refFont, fitWidth(dc, refFont, otRef, maxW), Graphics.TEXT_JUSTIFY_LEFT);
         y += refH;
-        dc.drawText(marginX, y, refFont, fitWidth(dc, refFont, ntRef, maxW), Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(_marginX, y, refFont, fitWidth(dc, refFont, ntRef, maxW), Graphics.TEXT_JUSTIFY_LEFT);
     }
 
     function resolveFont(idx as Number or Null) as Graphics.FontType {
