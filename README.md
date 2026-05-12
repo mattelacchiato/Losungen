@@ -43,10 +43,22 @@ Weitere Informationen finden Sie hier: www.losungen.de
 
 ## Unterstützte Geräte
 
-Forerunner 955; fēnix 7 / 7S / 7X (inkl. Pro und Pro nowifi); fēnix 8
-(43/47 mm, Pro 47 mm, Solar 47/51 mm); fēnix E; epix Pro Gen 2
-(42/47/51 mm); venu 3 / 3S; venu 4 (41/45 mm); vívoactive 5 / 6;
-Instinct 3 AMOLED (45/50 mm).
+- **Forerunner**: 55, 165 / 165 Music, 245 / 245 Music, 255 / 255 Music
+  / 255S / 255S Music, 265 / 265S, 570 (42/47 mm), 745, 945 / 945 LTE,
+  955, 965, 970
+- **fēnix**: 6 / 6S / 6 Pro / 6S Pro / 6X Pro; 7 / 7S / 7X (inkl. Pro
+  und Pro nowifi); 8 (43/47 mm, Pro 47 mm, Solar 47/51 mm); E
+- **epix**: 2; epix Pro Gen 2 (42/47/51 mm)
+- **Venu**: Venu, Venu 2 / 2S / 2 Plus, Venu 3 / 3S, Venu 4 (41/45 mm),
+  Venu Sq / Sq Music, Venu Sq 2 / Sq 2 Music, Venu X1
+- **vívoactive**: 4 / 4S / 5 / 6
+- **MARQ**: Gen 1 (Adventurer, Athlete, Aviator, Captain, Commander,
+  Driver, Expedition, Golfer); Gen 2 (inkl. Aviator)
+- **Approach**: S50, S70 (42/47 mm)
+- **Descent**: G2, Mk2 / Mk2 S, Mk3 (43/51 mm)
+- **D2**: Air X10, Mach 1, Mach 2 / 2 Pro
+- **Enduro**: 1 / 3
+- **Instinct**: 3 AMOLED (45/50 mm)
 
 Die maßgebliche Liste steht in [`garmin/manifest.xml`](garmin/manifest.xml).
 
