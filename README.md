@@ -20,16 +20,19 @@ Dieses Projekt ist nicht offiziell von der Brüder-Unität oder von Garmin.
 
 ---
 
-Connect-IQ-Watch-App für Garmin-Sportuhren, die täglich Losung
-(alttestamentlicher Vers) und Lehrtext (neutestamentlicher Vers) der
-Herrnhuter Losungen anzeigt. Die Daten 2026 sind als App-Ressource
-eingebettet — die Uhr braucht keine Internetverbindung.
+Die Losungen für jeden Tag des Jahres – direkt auf deiner Garmin-Uhr.
 
-## Funktionen
+Seit 1731 ziehen die Herrnhuter Brüdergemeine täglich zwei Bibelverse als "Losung": einen aus dem Alten Testament (Losungstext) und einen aus dem Neuen Testament (Lehrtext). Diese App zeigt dir beide Verse für den aktuellen Tag – ohne Internetverbindung, ohne Smartphone-Kopplung.
 
-- **Glance ("Übersicht")**: Datum, Bibelstellen und Textanfang.
-- **App**: Volltext-Ansicht von Losung und Lehrtext mit Scrollen via
-  Hoch/Runter oder Touch.
+Funktionen:
+• Tageslosung (AT) und Lehrtext (NT) mit Bibelstelle
+• Glance-Ansicht ("Übersicht") für schnellen Blick aufs Handgelenk
+• Vollbild-Ansicht mit Scrollen durch beide Verse
+• Komplett offline – alle Texte des Jahres sind in der App enthalten
+• Jährliche Aktualisierung der Losungstexte
+
+© Evangelische Brüder-Unität – Herrnhuter Brüdergemeine (www.herrnhuter.de)
+Weitere Informationen finden Sie hier: www.losungen.de
 
 ## Screenshots
 

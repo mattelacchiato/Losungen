@@ -1,5 +1,6 @@
 csv_extracted/
 xml_extracted/
+Losung_*.zip
 *.prg
 *.pem
 bin/
