@@ -7,6 +7,22 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 IQ_NAME="losungen.iq"
 KEY_FILE="$PROJECT_DIR/developer_key.der"
+MANIFEST="$PROJECT_DIR/garmin/manifest.xml"
+
+# --- App version ------------------------------------------------------------
+# Optional positional arg: bump manifest.xml version="..." in-place. Garmin
+# Connect IQ Store rejects re-uploads with an unchanged version, so each
+# release must bump this.
+
+APP_VERSION="${1:-}"
+if [[ -n "$APP_VERSION" ]]; then
+    if [[ ! "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "ERROR: version must be MAJOR.MINOR.PATCH (got: $APP_VERSION)" >&2
+        exit 1
+    fi
+    /usr/bin/sed -i '' -E "s/(version=\")[0-9]+\.[0-9]+\.[0-9]+(\")/\1${APP_VERSION}\2/" "$MANIFEST"
+    echo "Updated manifest version to $APP_VERSION"
+fi
 
 # --- Locate Connect IQ SDK --------------------------------------------------
 
