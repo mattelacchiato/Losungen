@@ -15,6 +15,11 @@ fenix7xpronowifi.resourcePath = $(base.resourcePath);resources-fenix7
 venusq2.resourcePath = $(base.resourcePath);resources-venusq2
 venusq2m.resourcePath = $(base.resourcePath);resources-venusq2
 
+# Venu Sq Gen 1 shares the rectangular layout with Venu Sq 2 but uses a
+# 36×36 launcher icon instead of the default 40×40.
+venusq.resourcePath = $(base.resourcePath);resources-icon-36;resources-venusq2
+venusqm.resourcePath = $(base.resourcePath);resources-icon-36;resources-venusq2
+
 # Launcher icon overrides per device. Default 40x40 in resources/ stays
 # for fr955, fenix7 family, fenix7pro family, fenix8 solar. Other devices
 # get a size-matched icon to avoid SDK upscaling warnings.
@@ -58,3 +63,12 @@ venu2plus.resourcePath = $(base.resourcePath);resources-icon-70
 approachs7047mm.resourcePath = $(base.resourcePath);resources-icon-70;resources-approachs7047mm
 d2airx10.resourcePath = $(base.resourcePath);resources-icon-70
 venu2s.resourcePath = $(base.resourcePath);resources-icon-61
+
+# CIQ 3.3/3.4 watches added in 2026.2: most use the default 40×40 icon
+# (fr245/245m/945/945lte, fenix6 family, enduro, descent mk2 family,
+# MARQ Gen 1) and inherit the round layout defaults. Only the smaller
+# launcher icons need explicit overrides.
+fr55.resourcePath = $(base.resourcePath);resources-icon-35
+vivoactive4.resourcePath = $(base.resourcePath);resources-icon-35
+vivoactive4s.resourcePath = $(base.resourcePath);resources-icon-30
+venu.resourcePath = $(base.resourcePath);resources-icon-60
