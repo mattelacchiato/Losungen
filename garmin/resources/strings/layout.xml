@@ -8,4 +8,9 @@
          used by round faces to clear the curved top/bottom edges. -->
     <string id="OverviewMarginX">10</string>
     <string id="OverviewVInset">-1</string>
+    <!-- Body font for the main view. Default FONT_XTINY (0) renders cleanly
+         everywhere from ~240 px upward. Small-display devices (≤218 px)
+         override this to FONT_TINY (1) via resources-bodyfont-tiny so the
+         bitmap glyphs don't look ragged. -->
+    <string id="OverviewBodyFont">0</string>
 </strings>

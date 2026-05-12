@@ -71,7 +71,7 @@ class LosungView extends WatchUi.View {
         var width = dc.getWidth();
         var height = dc.getHeight();
         var refFont = Graphics.FONT_SMALL;
-        var bodyFont = Graphics.FONT_XTINY;
+        var bodyFont = resolveFont((WatchUi.loadResource(Rez.Strings.OverviewBodyFont) as String).toNumber());
         var refH = dc.getFontHeight(refFont);
         var bodyLineH = dc.getFontHeight(bodyFont);
 
@@ -97,6 +97,10 @@ class LosungView extends WatchUi.View {
 
         var refGap = 6;
         var spacerH = bodyLineH;
+        // Copyright/build sit visually apart from the verses — give them
+        // ~2 line heights of breathing room rather than the single-line
+        // spacer used between OT and NT.
+        var copyrightGap = 2 * spacerH;
         var hasNt = _ntRef.length() > 0 || ntLines.size() > 0;
         var totalH = refH + refGap
                    + otLines.size() * bodyLineH;
@@ -105,7 +109,7 @@ class LosungView extends WatchUi.View {
                     + refH + refGap
                     + ntLines.size() * bodyLineH;
         }
-        totalH += spacerH
+        totalH += copyrightGap
                 + bodyLineH
                 + spacerH
                 + copyrightLines.size() * bodyLineH;
@@ -158,10 +162,13 @@ class LosungView extends WatchUi.View {
             }
         }
 
-        y += spacerH;
+        y += copyrightGap;
 
-        // Copyright
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        // Mid-gray (0x808080). Not in the 8 bpp MIP palette — devices
+        // dither it from LT_GRAY/DK_GRAY pixels, which still reads cleanly
+        // here because the text is secondary and the dither pattern stays
+        // fine-grained at this glyph size.
+        dc.setColor(0x808080, Graphics.COLOR_TRANSPARENT);
         for (var i = 0; i < copyrightLines.size(); i += 1) {
             dc.drawText(width / 2, y, bodyFont, copyrightLines[i], Graphics.TEXT_JUSTIFY_CENTER);
             y += bodyLineH;
@@ -177,6 +184,17 @@ class LosungView extends WatchUi.View {
         if (totalH > viewportH) {
             drawScrollIndicator(dc, width, topInset, viewportH, scrollPx, maxScrollPx, totalH);
         }
+    }
+
+    function resolveFont(idx as Number or Null) as Graphics.FontType {
+        switch (idx) {
+            case 0: return Graphics.FONT_XTINY;
+            case 1: return Graphics.FONT_TINY;
+            case 2: return Graphics.FONT_SMALL;
+            case 3: return Graphics.FONT_MEDIUM;
+            case 4: return Graphics.FONT_LARGE;
+        }
+        return Graphics.FONT_XTINY;
     }
 
     private function drawScrollIndicator(

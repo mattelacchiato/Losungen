@@ -7,7 +7,7 @@
         minApiLevel="3.3.0"
         name="@Strings.AppName"
         type="watch-app"
-        version="2026.2.0">
+        version="2026.3.0">
         <iq:products>
             <iq:product id="fr745"/>
             <iq:product id="fr955"/>

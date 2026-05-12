@@ -68,7 +68,14 @@ venu2s.resourcePath = $(base.resourcePath);resources-icon-61
 # (fr245/245m/945/945lte, fenix6 family, enduro, descent mk2 family,
 # MARQ Gen 1) and inherit the round layout defaults. Only the smaller
 # launcher icons need explicit overrides.
-fr55.resourcePath = $(base.resourcePath);resources-icon-35
 vivoactive4.resourcePath = $(base.resourcePath);resources-icon-35
-vivoactive4s.resourcePath = $(base.resourcePath);resources-icon-30
 venu.resourcePath = $(base.resourcePath);resources-icon-60
+
+# Small-display watches (≤ 218 px) need a heftier body font — at this
+# pixel density Garmin's stock FONT_XTINY renders as ragged bitmap
+# glyphs. resources-bodyfont-tiny bumps the body font to FONT_TINY.
+# Larger MIP displays (fr955/fr745/fenix6 etc.) render XTINY cleanly.
+fr55.resourcePath = $(base.resourcePath);resources-icon-35;resources-bodyfont-tiny
+vivoactive4s.resourcePath = $(base.resourcePath);resources-icon-30;resources-bodyfont-tiny
+fr255s.resourcePath = $(base.resourcePath);resources-bodyfont-tiny
+fr255sm.resourcePath = $(base.resourcePath);resources-bodyfont-tiny
