@@ -4,4 +4,8 @@
     <string scope="glance" id="GlanceMarginX">4</string>
     <!-- 0=XTINY, 1=TINY, 2=SMALL, 3=MEDIUM, 4=LARGE -->
     <string scope="glance" id="GlanceTitleFont">2</string>
+    <!-- Main view layout. OverviewVInset = -1 means "auto" (height / 8),
+         used by round faces to clear the curved top/bottom edges. -->
+    <string id="OverviewMarginX">10</string>
+    <string id="OverviewVInset">-1</string>
 </strings>

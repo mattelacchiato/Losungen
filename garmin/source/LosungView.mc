@@ -75,12 +75,14 @@ class LosungView extends WatchUi.View {
         var refH = dc.getFontHeight(refFont);
         var bodyLineH = dc.getFontHeight(bodyFont);
 
-        // Round-screen viewport: stay clear of the curved top/bottom edges.
-        var topInset = height / 8;
-        var bottomInset = height / 8;
+        // Per-device layout values. Defaults assume a round face (insets clear
+        // the curved edges); rectangular models override via resources.
+        var vInsetRes = (WatchUi.loadResource(Rez.Strings.OverviewVInset) as String).toNumber();
+        var topInset = vInsetRes < 0 ? height / 8 : vInsetRes;
+        var bottomInset = topInset;
         var viewportH = height - topInset - bottomInset;
 
-        var bodyMargin = 10;
+        var bodyMargin = (WatchUi.loadResource(Rez.Strings.OverviewMarginX) as String).toNumber();
         var bodyW = width - 2 * bodyMargin;
 
         if (_wrappedOt == null || _lastWidth != bodyW) {
