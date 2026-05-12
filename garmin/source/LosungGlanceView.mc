@@ -19,7 +19,7 @@ class LosungGlanceView extends WatchUi.GlanceView {
         var entry = LosungData.entryForToday();
         if (entry == null) {
             otRef = WatchUi.loadResource(Rez.Strings.NoDataBody) as String;
-            ntRef = "";
+            ntRef = WatchUi.loadResource(Rez.Strings.UpdateHintGlance) as String;
         } else {
             otRef = entry[0];
             ntRef = entry[2];

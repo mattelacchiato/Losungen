@@ -38,8 +38,8 @@ class LosungView extends WatchUi.View {
         if (entry == null) {
             _otRef = WatchUi.loadResource(Rez.Strings.NoDataTitle) as String;
             _otText = WatchUi.loadResource(Rez.Strings.NoDataBody) as String;
-            _ntRef = "";
-            _ntText = "";
+            _ntRef = WatchUi.loadResource(Rez.Strings.UpdateHintTitle) as String;
+            _ntText = WatchUi.loadResource(Rez.Strings.UpdateHintBody) as String;
         } else {
             _otRef = entry[0];
             _otText = entry[1];

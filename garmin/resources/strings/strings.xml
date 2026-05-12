@@ -4,4 +4,7 @@
     <string scope="glance" id="GlanceTitle">Die Losungen</string>
     <string scope="glance" id="NoDataTitle">Keine Losung</string>
     <string scope="glance" id="NoDataBody">Für heute liegt kein Eintrag vor.</string>
+    <string id="UpdateHintTitle">Hinweis</string>
+    <string id="UpdateHintBody">Bitte App im Connect IQ Store aktualisieren.</string>
+    <string scope="glance" id="UpdateHintGlance">App im Store aktualisieren</string>
 </strings>
